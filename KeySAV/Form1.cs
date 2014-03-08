@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.IO;
+﻿// -----------------------------------------------------------------------
+// <copyright file="Form1.cs" company="Project Pokemon">
+// Copyright © Kaphotics 2014.
+// http://projectpokemon.org/forums/showthread.php?37221
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace KeySAV
 {
+    using System;
+    using System.IO;
+    using System.Windows.Forms;
+
     public partial class KeySAV : Form
     {
         // Init
@@ -19,6 +20,7 @@ namespace KeySAV
             {
                 this.Name = "KeySAV Public";
             }
+
             InitializeComponent();
             B_OpenKey.Enabled = false;
             B_OpenEKX.Enabled = false;
@@ -51,7 +53,6 @@ namespace KeySAV
                 T_BoxOffset.Visible = false;
                 B_DumpBoxKey.Visible = false;
 
-
                 // Hide Tab1's Advanced Info
                 T_Nick.Visible = false;
                 label7.Visible = false;
@@ -71,6 +72,7 @@ namespace KeySAV
                 // Allow Dumping
                 C_Format.Items.Add("Dump");
             }
+
             CB_Box.Items.AddRange(new object[] {
             "3",
             "4",
@@ -106,25 +108,25 @@ namespace KeySAV
 
         // Global Stuff
         public string COMPILEMODE = "Private";
-        public byte[] savefile = new Byte[0x10009C];
-        public byte[] boxfile = new Byte[0x10009C];
-        public byte[] save1 = new Byte[0x10009C];
-        public byte[] save2 = new Byte[0x10009C];
-        public byte[] keystream = new Byte[232];
-        public byte[] boxkey = new Byte[6960]; // 232*30
-        public byte[] keystream1 = new Byte[6960]; // 232*30
-        public byte[] keystream2 = new Byte[6960]; // 232*30
-        public byte[] key2 = new Byte[232];
-        public byte[] ekx = new Byte[232];
-        public byte[] ekx1 = new Byte[232];
-        public byte[] ekx2 = new Byte[232];
-        public byte[] blankekx = new Byte[232];
-        public byte[] break1 = new Byte[0x10009C];
-        public byte[] break2 = new Byte[0x10009C];
+        public byte[] savefile = new byte[0x10009C];
+        public byte[] boxfile = new byte[0x10009C];
+        public byte[] save1 = new byte[0x10009C];
+        public byte[] save2 = new byte[0x10009C];
+        public byte[] keystream = new byte[232];
+        public byte[] boxkey = new byte[6960]; // 232*30
+        public byte[] keystream1 = new byte[6960]; // 232*30
+        public byte[] keystream2 = new byte[6960]; // 232*30
+        public byte[] key2 = new byte[232];
+        public byte[] ekx = new byte[232];
+        public byte[] ekx1 = new byte[232];
+        public byte[] ekx2 = new byte[232];
+        public byte[] blankekx = new byte[232];
+        public byte[] break1 = new byte[0x10009C];
+        public byte[] break2 = new byte[0x10009C];
         public int[] offset = new int[] { 0, 0 };
         public string binsave = "Digital Save File|*.sav|DPS Save File|*.bin";
-        public byte[] boxbreakblank = new Byte[232];
-        public string modestring = "";
+        public byte[] boxbreakblank = new byte[232];
+        public string modestring = string.Empty;
 
         // Offset Prepopulation
         private void refreshoffset()
@@ -135,7 +137,11 @@ namespace KeySAV
             {
                 zor = 1;
             }
-            else { zor = 0; }
+            else
+            {
+                zor = 0;
+            }
+
             if (boxfile.Length == 0x100000)
             {
                 // Headerless
@@ -145,6 +151,7 @@ namespace KeySAV
             {
                 os += ((uint)(CB_Box.SelectedIndex) * (232 * 30)) + 0xA6A9C - zor * 0x7F000;
             }
+
             T_BoxOffset.Text = os.ToString("X");
         }
 
@@ -161,15 +168,28 @@ namespace KeySAV
                 // Powersaves
                 box = (offset - 0xA6A9C) / (232 * 30);
             }
+
             return (box + 1);
         }
+
         // Data Manipulation
-        public static uint ToUInt32(String value, int b)
+
+        /// <summary>
+        /// Converts the string representation of a number in a specified base to an equivalent 32-bit unsigned integer. Values of <c>null</c> or Empty are converted to 0.
+        /// </summary>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="b">The base of the input.</param>
+        /// <returns>A 32-bit unsigned integer that is equivalent to the number in value, or 0 (zero) if value is empty or null.</returns>
+        public static uint ToUInt32(string value, int b)
         {
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
+            {
                 return 0;
+            }
+
             return Convert.ToUInt32(value, b);
         }
+
         private int getCloc(uint ec)
         {
             // Define Shuffle Order Structure
@@ -182,6 +202,7 @@ namespace KeySAV
             int clocation = cloc[sv];
             return clocation;
         }
+
         private int getDloc(uint ec)
         {
             // Define Shuffle Order Structure
@@ -194,6 +215,7 @@ namespace KeySAV
             int dlocation = dloc[sv];
             return dlocation;
         }
+
         private static uint LCRNG(uint seed)
         {
             uint a = 0x41C64E6D;
@@ -202,6 +224,7 @@ namespace KeySAV
             seed = (seed * a + c) & 0xFFFFFFFF;
             return seed;
         }
+
         private uint getchecksum(byte[] pkx)
         {
             uint chk = 0;
@@ -220,6 +243,7 @@ namespace KeySAV
             seed = (seed * a + c) & 0xFFFFFFFF;
             return seed;
         }
+
         // Custom Encryption
         private byte[] da(byte[] array)
         {
@@ -231,9 +255,10 @@ namespace KeySAV
             {
                 // Returns the Encrypted/Decrypted Array of Data
                 int al = array.Length;
+
                 // Set Encryption Seed
                 uint eseed = (uint)(array[al - 4] + array[al - 3] * 0x100 + array[al - 2] * 0x10000 + array[al - 1] * 0x10000000);
-                byte[] nca = new Byte[al];
+                byte[] nca = new byte[al];
 
                 // Get our XORCryptor
                 uint xc = CEXOR(eseed);
@@ -250,6 +275,7 @@ namespace KeySAV
                     nca[i + 2] = (byte)(xc2 ^ array[i + 2]);
                     nca[i + 3] = (byte)(xc3 ^ array[i + 3]);
                 }
+
                 // Return the Seed
                 nca[al - 4] = array[al - 4];
                 nca[al - 3] = array[al - 3];
@@ -263,7 +289,7 @@ namespace KeySAV
         // Array Manipulation
         private byte[] unshufflearray(byte[] pkx, uint sv)
         {
-            byte[] ekx = new Byte[260];
+            byte[] ekx = new byte[260];
             for (int i = 0; i < 8; i++)
             {
                 ekx[i] = pkx[i];
@@ -299,9 +325,10 @@ namespace KeySAV
             }
             return ekx;
         }
+
         private byte[] shufflearray(byte[] pkx, uint sv)
         {
-            byte[] ekx = new Byte[260];
+            byte[] ekx = new byte[260];
             for (int i = 0; i < 8; i++)
             {
                 ekx[i] = pkx[i];
@@ -337,6 +364,7 @@ namespace KeySAV
             }
             return ekx;
         }
+
         private byte[] decryptarray(byte[] ekx)
         {
             byte[] pkx = ekx;
@@ -344,6 +372,7 @@ namespace KeySAV
             uint sv = (((pv & 0x3E000) >> 0xD) % 24);
 
             uint seed = pv;
+
             // Decrypt Blocks with RNG Seed
             for (int i = 8; i < 232; i += 2)
             {
@@ -354,6 +383,7 @@ namespace KeySAV
                 pkx[i] = (byte)((post) & 0xFF);
                 pkx[i + 1] = (byte)(((post) >> 8) & 0xFF);
             }
+
             // Deshuffle
             pkx = unshufflearray(pkx, sv);
 
@@ -371,6 +401,7 @@ namespace KeySAV
 
             return pkx;
         }
+
         private byte[] encryptarray(byte[] pkx)
         {
             // Shuffle
@@ -384,6 +415,7 @@ namespace KeySAV
             byte[] ekx = shufflearray(pkx, sv);
 
             uint seed = pv;
+
             // Encrypt Blocks with RNG Seed
             for (int i = 8; i < 232; i += 2)
             {
@@ -410,6 +442,7 @@ namespace KeySAV
             // Done
             return ekx;
         }
+
         private string getspecies(int species)
         {
             string[] spectable = new string[] { "None", "Bulbasaur", "Ivysaur", "Venusaur", "Charmander", "Charmeleon", "Charizard", "Squirtle", "Wartortle", "Blastoise", "Caterpie", "Metapod", "Butterfree", "Weedle", "Kakuna", "Beedrill", "Pidgey", "Pidgeotto", "Pidgeot", "Rattata", "Raticate", "Spearow", "Fearow", "Ekans", "Arbok", "Pikachu", "Raichu", "Sandshrew", "Sandslash", "Nidoran♀", "Nidorina", "Nidoqueen", "Nidoran♂", "Nidorino", "Nidoking", "Clefairy", "Clefable", "Vulpix", "Ninetales", "Jigglypuff", "Wigglytuff", "Zubat", "Golbat", "Oddish", "Gloom", "Vileplume", "Paras", "Parasect", "Venonat", "Venomoth", "Diglett", "Dugtrio", "Meowth", "Persian", "Psyduck", "Golduck", "Mankey", "Primeape", "Growlithe", "Arcanine", "Poliwag", "Poliwhirl", "Poliwrath", "Abra", "Kadabra", "Alakazam", "Machop", "Machoke", "Machamp", "Bellsprout", "Weepinbell", "Victreebel", "Tentacool", "Tentacruel", "Geodude", "Graveler", "Golem", "Ponyta", "Rapidash", "Slowpoke", "Slowbro", "Magnemite", "Magneton", "Farfetchd", "Doduo", "Dodrio", "Seel", "Dewgong", "Grimer", "Muk", "Shellder", "Cloyster", "Gastly", "Haunter", "Gengar", "Onix", "Drowzee", "Hypno", "Krabby", "Kingler", "Voltorb", "Electrode", "Exeggcute", "Exeggutor", "Cubone", "Marowak", "Hitmonlee", "Hitmonchan", "Lickitung", "Koffing", "Weezing", "Rhyhorn", "Rhydon", "Chansey", "Tangela", "Kangaskhan", "Horsea", "Seadra", "Goldeen", "Seaking", "Staryu", "Starmie", "Mr. Mime", "Scyther", "Jynx", "Electabuzz", "Magmar", "Pinsir", "Tauros", "Magikarp", "Gyarados", "Lapras", "Ditto", "Eevee", "Vaporeon", "Jolteon", "Flareon", "Porygon", "Omanyte", "Omastar", "Kabuto", "Kabutops", "Aerodactyl", "Snorlax", "Articuno", "Zapdos", "Moltres", "Dratini", "Dragonair", "Dragonite", "Mewtwo", "Mew", "Chikorita", "Bayleef", "Meganium", "Cyndaquil", "Quilava", "Typhlosion", "Totodile", "Croconaw", "Feraligatr", "Sentret", "Furret", "Hoothoot", "Noctowl", "Ledyba", "Ledian", "Spinarak", "Ariados", "Crobat", "Chinchou", "Lanturn", "Pichu", "Cleffa", "Igglybuff", "Togepi", "Togetic", "Natu", "Xatu", "Mareep", "Flaaffy", "Ampharos", "Bellossom", "Marill", "Azumarill", "Sudowoodo", "Politoed", "Hoppip", "Skiploom", "Jumpluff", "Aipom", "Sunkern", "Sunflora", "Yanma", "Wooper", "Quagsire", "Espeon", "Umbreon", "Murkrow", "Slowking", "Misdreavus", "Unown", "Wobbuffet", "Girafarig", "Pineco", "Forretress", "Dunsparce", "Gligar", "Steelix", "Snubbull", "Granbull", "Qwilfish", "Scizor", "Shuckle", "Heracross", "Sneasel", "Teddiursa", "Ursaring", "Slugma", "Magcargo", "Swinub", "Piloswine", "Corsola", "Remoraid", "Octillery", "Delibird", "Mantine", "Skarmory", "Houndour", "Houndoom", "Kingdra", "Phanpy", "Donphan", "Porygon2", "Stantler", "Smeargle", "Tyrogue", "Hitmontop", "Smoochum", "Elekid", "Magby", "Miltank", "Blissey", "Raikou", "Entei", "Suicune", "Larvitar", "Pupitar", "Tyranitar", "Lugia", "Ho-Oh", "Celebi", "Treecko", "Grovyle", "Sceptile", "Torchic", "Combusken", "Blaziken", "Mudkip", "Marshtomp", "Swampert", "Poochyena", "Mightyena", "Zigzagoon", "Linoone", "Wurmple", "Silcoon", "Beautifly", "Cascoon", "Dustox", "Lotad", "Lombre", "Ludicolo", "Seedot", "Nuzleaf", "Shiftry", "Taillow", "Swellow", "Wingull", "Pelipper", "Ralts", "Kirlia", "Gardevoir", "Surskit", "Masquerain", "Shroomish", "Breloom", "Slakoth", "Vigoroth", "Slaking", "Nincada", "Ninjask", "Shedinja", "Whismur", "Loudred", "Exploud", "Makuhita", "Hariyama", "Azurill", "Nosepass", "Skitty", "Delcatty", "Sableye", "Mawile", "Aron", "Lairon", "Aggron", "Meditite", "Medicham", "Electrike", "Manectric", "Plusle", "Minun", "Volbeat", "Illumise", "Roselia", "Gulpin", "Swalot", "Carvanha", "Sharpedo", "Wailmer", "Wailord", "Numel", "Camerupt", "Torkoal", "Spoink", "Grumpig", "Spinda", "Trapinch", "Vibrava", "Flygon", "Cacnea", "Cacturne", "Swablu", "Altaria", "Zangoose", "Seviper", "Lunatone", "Solrock", "Barboach", "Whiscash", "Corphish", "Crawdaunt", "Baltoy", "Claydol", "Lileep", "Cradily", "Anorith", "Armaldo", "Feebas", "Milotic", "Castform", "Kecleon", "Shuppet", "Banette", "Duskull", "Dusclops", "Tropius", "Chimecho", "Absol", "Wynaut", "Snorunt", "Glalie", "Spheal", "Sealeo", "Walrein", "Clamperl", "Huntail", "Gorebyss", "Relicanth", "Luvdisc", "Bagon", "Shelgon", "Salamence", "Beldum", "Metang", "Metagross", "Regirock", "Regice", "Registeel", "Latias", "Latios", "Kyogre", "Groudon", "Rayquaza", "Jirachi", "Deoxys", "Turtwig", "Grotle", "Torterra", "Chimchar", "Monferno", "Infernape", "Piplup", "Prinplup", "Empoleon", "Starly", "Staravia", "Staraptor", "Bidoof", "Bibarel", "Kricketot", "Kricketune", "Shinx", "Luxio", "Luxray", "Budew", "Roserade", "Cranidos", "Rampardos", "Shieldon", "Bastiodon", "Burmy", "Wormadam", "Mothim", "Combee", "Vespiquen", "Pachirisu", "Buizel", "Floatzel", "Cherubi", "Cherrim", "Shellos", "Gastrodon", "Ambipom", "Drifloon", "Drifblim", "Buneary", "Lopunny", "Mismagius", "Honchkrow", "Glameow", "Purugly", "Chingling", "Stunky", "Skuntank", "Bronzor", "Bronzong", "Bonsly", "Mime Jr.", "Happiny", "Chatot", "Spiritomb", "Gible", "Gabite", "Garchomp", "Munchlax", "Riolu", "Lucario", "Hippopotas", "Hippowdon", "Skorupi", "Drapion", "Croagunk", "Toxicroak", "Carnivine", "Finneon", "Lumineon", "Mantyke", "Snover", "Abomasnow", "Weavile", "Magnezone", "Lickilicky", "Rhyperior", "Tangrowth", "Electivire", "Magmortar", "Togekiss", "Yanmega", "Leafeon", "Glaceon", "Gliscor", "Mamoswine", "Porygon-Z", "Gallade", "Probopass", "Dusknoir", "Froslass", "Rotom", "Uxie", "Mesprit", "Azelf", "Dialga", "Palkia", "Heatran", "Regigigas", "Giratina", "Cresselia", "Phione", "Manaphy", "Darkrai", "Shaymin", "Arceus", "Victini", "Snivy", "Servine", "Serperior", "Tepig", "Pignite", "Emboar", "Oshawott", "Dewott", "Samurott", "Patrat", "Watchog", "Lillipup", "Herdier", "Stoutland", "Purrloin", "Liepard", "Pansage", "Simisage", "Pansear", "Simisear", "Panpour", "Simipour", "Munna", "Musharna", "Pidove", "Tranquill", "Unfezant", "Blitzle", "Zebstrika", "Roggenrola", "Boldore", "Gigalith", "Woobat", "Swoobat", "Drilbur", "Excadrill", "Audino", "Timburr", "Gurdurr", "Conkeldurr", "Tympole", "Palpitoad", "Seismitoad", "Throh", "Sawk", "Sewaddle", "Swadloon", "Leavanny", "Venipede", "Whirlipede", "Scolipede", "Cottonee", "Whimsicott", "Petilil", "Lilligant", "Basculin", "Sandile", "Krokorok", "Krookodile", "Darumaka", "Darmanitan", "Maractus", "Dwebble", "Crustle", "Scraggy", "Scrafty", "Sigilyph", "Yamask", "Cofagrigus", "Tirtouga", "Carracosta", "Archen", "Archeops", "Trubbish", "Garbodor", "Zorua", "Zoroark", "Minccino", "Cinccino", "Gothita", "Gothorita", "Gothitelle", "Solosis", "Duosion", "Reuniclus", "Ducklett", "Swanna", "Vanillite", "Vanillish", "Vanilluxe", "Deerling", "Sawsbuck", "Emolga", "Karrablast", "Escavalier", "Foongus", "Amoonguss", "Frillish", "Jellicent", "Alomomola", "Joltik", "Galvantula", "Ferroseed", "Ferrothorn", "Klink", "Klang", "Klinklang", "Tynamo", "Eelektrik", "Eelektross", "Elgyem", "Beheeyem", "Litwick", "Lampent", "Chandelure", "Axew", "Fraxure", "Haxorus", "Cubchoo", "Beartic", "Cryogonal", "Shelmet", "Accelgor", "Stunfisk", "Mienfoo", "Mienshao", "Druddigon", "Golett", "Golurk", "Pawniard", "Bisharp", "Bouffalant", "Rufflet", "Braviary", "Vullaby", "Mandibuzz", "Heatmor", "Durant", "Deino", "Zweilous", "Hydreigon", "Larvesta", "Volcarona", "Cobalion", "Terrakion", "Virizion", "Tornadus", "Thundurus", "Reshiram", "Zekrom", "Landorus", "Kyurem", "Keldeo", "Meloetta", "Genesect", "Chespin", "Quilladin", "Chesnaught", "Fennekin", "Braixen", "Delphox", "Froakie", "Frogadier", "Greninja", "Bunnelby", "Diggersby", "Fletchling", "Fletchinder", "Talonflame", "Scatterbug", "Spewpa", "Vivillon", "Litleo", "Pyroar", "Flabébé", "Floette", "Florges", "Skiddo", "Gogoat", "Pancham", "Pangoro", "Furfrou", "Espurr", "Meowstic", "Honedge", "Doublade", "Aegislash", "Spritzee", "Aromatisse", "Swirlix", "Slurpuff", "Inkay", "Malamar", "Binacle", "Barbaracle", "Skrelp", "Dragalge", "Clauncher", "Clawitzer", "Helioptile", "Heliolisk", "Tyrunt", "Tyrantrum", "Amaura", "Aurorus", "Sylveon", "Hawlucha", "Dedenne", "Carbink", "Goomy", "Sliggoo", "Goodra", "Klefki", "Phantump", "Trevenant", "Pumpkaboo", "Gourgeist", "Bergmite", "Avalugg", "Noibat", "Noivern", "Xerneas", "Yveltal", "Zygarde", "Diancie", "Hoopa", "Volcanion" };
@@ -417,8 +450,12 @@ namespace KeySAV
             {
                 return spectable[species];
             }
-            catch { return "Error"; }
+            catch
+            {
+                return "Error";
+            }
         }
+
         private string getivs(byte[] buff, uint sv)
         {
             int IV32 = buff[0x77] * 0x1000000 + buff[0x76] * 0x10000 + buff[0x75] * 0x100 + buff[0x74];
@@ -429,7 +466,7 @@ namespace KeySAV
             int SPA_IV = (IV32 >> 20) & 0x1F;
             int SPD_IV = (IV32 >> 25) & 0x1F;
 
-            string ivs = "";
+            string ivs = string.Empty;
             ivs += HP_IV.ToString("00") + ".";
             ivs += ATK_IV.ToString("00") + ".";
             ivs += DEF_IV.ToString("00") + ".";
@@ -453,6 +490,7 @@ namespace KeySAV
             }
             return ivs;
         }
+
         private string getivs2(byte[] buff, uint sv)
         {
             int IV32 = buff[0x77] * 0x1000000 + buff[0x76] * 0x10000 + buff[0x75] * 0x100 + buff[0x74];
@@ -463,7 +501,7 @@ namespace KeySAV
             int SPA_IV = (IV32 >> 20) & 0x1F;
             int SPD_IV = (IV32 >> 25) & 0x1F;
 
-            string ivs = "";
+            string ivs = string.Empty;
             ivs += HP_IV.ToString("00") + ".";
             ivs += ATK_IV.ToString("00") + ".";
             ivs += DEF_IV.ToString("00") + ".";
@@ -487,15 +525,17 @@ namespace KeySAV
             }
             return ivs;
         }
+
         private string getnature(byte[] buff)
         {
             int nature = buff[0x1C];
             string[] nattable = new string[] { "Hardy", "Lonely", "Brave", "Adamant", "Naughty", "Bold", "Docile", "Relaxed", "Impish", "Lax", "Timid", "Hasty", "Serious", "Jolly", "Naive", "Modest", "Mild", "Quiet", "Bashful", "Rash", "Calm", "Gentle", "Sassy", "Careful", "Quirky" };
             return nattable[nature];
         }
+
         private string getgender(byte[] buff)
         {
-            string g = "";
+            string g = string.Empty;
             int genderflag = (buff[0x1D] >> 1) & 0x3;
             if (genderflag == 0)
             {
@@ -507,15 +547,20 @@ namespace KeySAV
                 // Gender = Female
                 g = " (F)";
             }
-            else { g = ""; }
+            else
+            {
+                g = string.Empty;
+            }
             return g;
         }
+
         private string getability(byte[] buff)
         {
             int ability = buff[0x14];
             string[] abiltable = new string[] { "None", "Stench", "Drizzle", "Speed Boost", "Battle Armor", "Sturdy", "Damp", "Limber", "Sand Veil", "Static", "Volt Absorb", "Water Absorb", "Oblivious", "Cloud Nine", "Compound Eyes", "Insomnia", "Color Change", "Immunity", "Flash Fire", "Shield Dust", "Own Tempo", "Suction Cups", "Intimidate", "Shadow Tag", "Rough Skin", "Wonder Guard", "Levitate", "Effect Spore", "Synchronize", "Clear Body", "Natural Cure", "Lightning Rod", "Serene Grace", "Swift Swim", "Chlorophyll", "Illuminate", "Trace", "Huge Power", "Poison Point", "Inner Focus", "Magma Armor", "Water Veil", "Magnet Pull", "Soundproof", "Rain Dish", "Sand Stream", "Pressure", "Thick Fat", "Early Bird", "Flame Body", "Run Away", "Keen Eye", "Hyper Cutter", "Pickup", "Truant", "Hustle", "Cute Charm", "Plus", "Minus", "Forecast", "Sticky Hold", "Shed Skin", "Guts", "Marvel Scale", "Liquid Ooze", "Overgrow", "Blaze", "Torrent", "Swarm", "Rock Head", "Drought", "Arena Trap", "Vital Spirit", "White Smoke", "Pure Power", "Shell Armor", "Air Lock", "Tangled Feet", "Motor Drive", "Rivalry", "Steadfast", "Snow Cloak", "Gluttony", "Anger Point", "Unburden", "Heatproof", "Simple", "Dry Skin", "Download", "Iron Fist", "Poison Heal", "Adaptability", "Skill Link", "Hydration", "Solar Power", "Quick Feet", "Normalize", "Sniper", "Magic Guard", "No Guard", "Stall", "Technician", "Leaf Guard", "Klutz", "Mold Breaker", "Super Luck", "Aftermath", "Anticipation", "Forewarn", "Unaware", "Tinted Lens", "Filter", "Slow Start", "Scrappy", "Storm Drain", "Ice Body", "Solid Rock", "Snow Warning", "Honey Gather", "Frisk", "Reckless", "Multitype", "Flower Gift", "Bad Dreams", "Pickpocket", "Sheer Force", "Contrary", "Unnerve", "Defiant", "Defeatist", "Cursed Body", "Healer", "Friend Guard", "Weak Armor", "Heavy Metal", "Light Metal", "Multiscale", "Toxic Boost", "Flare Boost", "Harvest", "Telepathy", "Moody", "Overcoat", "Poison Touch", "Regenerator", "Big Pecks", "Sand Rush", "Wonder Skin", "Analytic", "Illusion", "Imposter", "Infiltrator", "Mummy", "Moxie", "Justified", "Rattled", "Magic Bounce", "Sap Sipper", "Prankster", "Sand Force", "Iron Barbs", "Zen Mode", "Victory Star", "Turboblaze", "Teravolt", "Aroma Veil", "Flower Veil", "Cheek Pouch", "Protean", "Fur Coat", "Magician", "Bulletproof", "Competitive", "Strong Jaw", "Refrigerate", "Sweet Veil", "Stance Change", "Gale Wings", "Mega Launcher", "Grass Pelt", "Symbiosis", "Tough Claws", "Pixilate", "Gooey", "-184-", "-185-", "Dark Aura", "Fairy Aura", "Aura Break", "-189-", };
             return abiltable[ability];
         }
+
         private string bytes2text(byte[] buff, int o)
         {
             string charstring;
@@ -530,6 +575,7 @@ namespace KeySAV
             }
             return charstring;
         }
+
         private string getTSV(byte[] buff)
         {
             uint TID = (uint)(buff[0x0C] + buff[0x0D] * 0x100);
@@ -545,9 +591,10 @@ namespace KeySAV
             B_OpenKey.Enabled = true;
             T_KeyOffset.Enabled = true;
         }
+
         private void toggle_getekx(object sender, EventArgs e)
         {
-            if ((T_key.Text != "") && (T_KeyOffset.Text != ""))
+            if ((T_key.Text != string.Empty) && (T_KeyOffset.Text != string.Empty))
             {
                 B_DumpEKX.Enabled = true;
             }
@@ -556,8 +603,7 @@ namespace KeySAV
                 B_DumpEKX.Enabled = false;
             }
 
-
-            if ((T_key.Text != "") && (T_KeyOffset.Text != "") && (T_ekx.Text != ""))
+            if ((T_key.Text != string.Empty) && (T_KeyOffset.Text != string.Empty) && (T_ekx.Text != string.Empty))
             {
                 T_FixKey.Enabled = true;
             }
@@ -566,9 +612,10 @@ namespace KeySAV
                 T_FixKey.Enabled = false;
             }
         }
+
         private void toggle_getkey(object sender, EventArgs e)
         {
-            if ((T_ekx.Text != "") && (T_KeyOffset.Text != ""))
+            if ((T_ekx.Text != string.Empty) && (T_KeyOffset.Text != string.Empty))
             {
                 B_DumpKey.Enabled = true;
             }
@@ -577,7 +624,7 @@ namespace KeySAV
                 B_DumpKey.Enabled = false;
             }
 
-            if ((T_key.Text != "") && (T_KeyOffset.Text != "") && (T_ekx.Text != ""))
+            if ((T_key.Text != string.Empty) && (T_KeyOffset.Text != string.Empty) && (T_ekx.Text != string.Empty))
             {
                 T_FixKey.Enabled = true;
             }
@@ -586,19 +633,19 @@ namespace KeySAV
                 T_FixKey.Enabled = false;
             }
 
-            if ((T_ekx.Text != ""))
+            if ((T_ekx.Text != string.Empty))
             {
                 B_FixEKX.Enabled = true;
-
             }
             else
             {
                 B_FixEKX.Enabled = false;
             }
         }
+
         private void toggle_secondary(object sender, EventArgs e)
         {
-            if ((T_Open1.Text != ""))
+            if ((T_Open1.Text != string.Empty))
             {
                 B_OpenKey.Enabled = true;
                 B_OpenEKX.Enabled = true;
@@ -611,9 +658,10 @@ namespace KeySAV
                 T_KeyOffset.Enabled = false;
             }
         }
+
         private void toggle_key2(object sender, EventArgs e)
         {
-            if ((T_S1.Text != "") && (T_E1.Text != "") && (T_S2.Text != "") && (T_E2.Text != ""))
+            if ((T_S1.Text != string.Empty) && (T_E1.Text != string.Empty) && (T_S2.Text != string.Empty) && (T_E2.Text != string.Empty))
             {
                 T_Key2Offset.Enabled = true;
                 B_GetKey2.Enabled = true;
@@ -623,14 +671,15 @@ namespace KeySAV
                 T_Key2Offset.Enabled = false;
                 B_GetKey2.Enabled = false;
             }
-            if ((T_S1.Text != "") && (T_S2.Text != ""))
+            if ((T_S1.Text != string.Empty) && (T_S2.Text != string.Empty))
             {
                 B_FindOffset.Enabled = true;
             }
         }
+
         private void togglebox(object sender, EventArgs e)
         {
-            if ((T_Blank.Text != "") && (T_BoxSAV.Text != ""))
+            if ((T_Blank.Text != string.Empty) && (T_BoxSAV.Text != string.Empty))
             {
                 // Enable dumping of Key
                 B_DumpBoxKey.Enabled = true;
@@ -645,7 +694,7 @@ namespace KeySAV
                 CB_Box.Enabled = false;
             }
 
-            if (((T_BoxKey.Text != "") && (T_BoxSAV.Text != "")) && ((T_Blank.Text != "") && (T_BoxSAV.Text != "")))
+            if (((T_BoxKey.Text != string.Empty) && (T_BoxSAV.Text != string.Empty)) && ((T_Blank.Text != string.Empty) && (T_BoxSAV.Text != string.Empty)))
             {
                 B_DumpBoxEKXs.Enabled = true;
                 T_BoxOffset.Enabled = true;
@@ -660,16 +709,18 @@ namespace KeySAV
             }
             refreshoffset();
         }
+
         private void togglebreak(object sender, EventArgs e)
         {
-            if ((T_OBreak1.Text != "") && (T_OBreak2.Text != ""))
+            if ((T_OBreak1.Text != string.Empty) && (T_OBreak2.Text != string.Empty))
             {
                 B_DoBreak.Enabled = true;
             }
         }
+
         private void toggle_fixkey(object sender, EventArgs e)
         {
-            if (T_FixKey.Text != "")
+            if (T_FixKey.Text != string.Empty)
             {
                 B_FixKey.Enabled = true;
             }
@@ -678,10 +729,12 @@ namespace KeySAV
                 B_FixKey.Enabled = false;
             }
         }
+
         private void CHK_ALT_CheckedChanged(object sender, EventArgs e)
         {
             refreshoffset();
         }
+
         private void changebox(object sender, EventArgs e)
         {
             refreshoffset();
@@ -701,6 +754,7 @@ namespace KeySAV
                 T_OBreak1.Text = path;
             }
         }
+
         private void B_OBreak2_Click(object sender, EventArgs e)
         {
             // Open Save File 2
@@ -714,23 +768,23 @@ namespace KeySAV
                 T_OBreak2.Text = path;
             }
         }
+
         private void B_DoBreak_Click(object sender, EventArgs e)
         {
             // Do Break. Let's first do some sanity checking to find out the 2 offsets we're dumping from.
             // Loop through save file to find
             int fo = 0xA0000; // Initial Offset, can tweak later.
             int success = 0;
-            string result = "";
+            string result = string.Empty;
 
             for (int d = 0; d < 2; d++)
             {
                 // Do this twice to get both box offsets.
-
                 for (int i = fo; i < 0xEE000; i++)
                 {
                     int err = 0;
-                    // Start at findoffset and see if it matches pattern
 
+                    // Start at findoffset and see if it matches pattern
                     if ((break1[i + 4] == break2[i + 4]) && (break1[i + 4 + 232] == break2[i + 4 + 232]))
                     {
                         // Sanity Placeholders are the same
@@ -762,12 +816,12 @@ namespace KeySAV
                         }
                     }
                 }
+
                 fo = offset[d] + 232 * 30;  // Fast forward out of this box to find the next.
             }
 
             // Now that we have our two box offsets...
             // Check to see if we actually have them.
-
             if ((offset[0] == 0) || (offset[1] == 0))
             {
                 // We have a problem. Don't continue.
@@ -777,8 +831,9 @@ namespace KeySAV
             {
                 // Let's go deeper. We have the two box offsets.
                 // Chunk up the base streams.
-                byte[,] estream1 = new Byte[30, 232];
-                byte[,] estream2 = new Byte[30, 232];
+                byte[,] estream1 = new byte[30, 232];
+                byte[,] estream2 = new byte[30, 232];
+
                 // Stuff 'em.
                 for (int i = 0; i < 30; i++)    // Times we're iterating
                 {
@@ -790,26 +845,32 @@ namespace KeySAV
                 }
 
                 // Okay, now that we have the encrypted streams, formulate our EKX.
-                byte[] empty = new Byte[232];
+                byte[] empty = new byte[232];
                 string nick = T_Nick.Text;
                 for (int i = 0; i < 24; i += 2) // Stuff in the nickname to our blank EKX.
                 {
                     int val = 0;
-                    try { val = (int)((char)nick[i / 2]); }
-                    catch { };
+                    try
+                    {
+                        val = (int)((char)nick[i / 2]);
+                    }
+                    catch
+                    {
+                    }
+
                     empty[0x40 + i] = (byte)(val & 0xFF);
                     empty[0x40 + i + 1] = (byte)((val >> 8) & 0xFF);
                 }
 
                 // Encrypt the Empty PKX to EKX.
-                byte[] emptyekx = new Byte[232];
+                byte[] emptyekx = new byte[232];
                 Array.Copy(empty, emptyekx, 232);
                 emptyekx = encryptarray(emptyekx);
 
                 // Sweet. Now we just have E0-E3 and the Checksum as unknown values. Let's get our polluted streams from each.
                 // Save file 1 has empty box 1. Save file 2 has empty box 2.
-                byte[,] pstream1 = new Byte[30, 232];
-                byte[,] pstream2 = new Byte[30, 232];
+                byte[,] pstream1 = new byte[30, 232];
+                byte[,] pstream2 = new byte[30, 232];
                 for (int i = 0; i < 30; i++)    // Times we're iterating
                 {
                     for (int j = 0; j < 232; j++)   // Stuff the Data
@@ -824,7 +885,7 @@ namespace KeySAV
                 // We need to make sure our Supplied Encryption Constant Pokemon have the D block somewhere else (Pref in 1 or 3).
 
                 // First, let's get out our polluted EKX's.
-                byte[,] polekx = new Byte[6, 232];
+                byte[,] polekx = new byte[6, 232];
                 for (int i = 0; i < 6; i++)
                 {
                     for (int j = 0; j < 232; j++)
@@ -841,13 +902,15 @@ namespace KeySAV
                     encryptionconstants[i] += (uint)polekx[i, 1] * 0x100;
                     encryptionconstants[i] += (uint)polekx[i, 2] * 0x10000;
                     encryptionconstants[i] += (uint)polekx[i, 3] * 0x1000000;
+
                     // EC Obtained. Check to see if Block D is not last.
                     if (getDloc(encryptionconstants[i]) != 3)
                     {
                         valid++;
+
                         // Find the Origin/Region data.
-                        byte[] encryptedekx = new Byte[232];
-                        byte[] decryptedpkx = new Byte[232];
+                        byte[] encryptedekx = new byte[232];
+                        byte[] decryptedpkx = new byte[232];
                         for (int z = 0; z < 232; z++)
                         {
                             encryptedekx[z] = polekx[i, z];
@@ -912,6 +975,7 @@ namespace KeySAV
                     Array.Copy(emptyekx, boxbreakblank, 232);
                 }
             }
+
             if (success == 1)
             {
                 // Success
@@ -924,15 +988,16 @@ namespace KeySAV
                 result += "K1 button - dump the First Box's Keystream.\r\n";
                 result += "K2 button - dump the Second Box's Keystream.\r\n";
                 result += "Blank button - dump Blank EKX data.\r\n";
-
             }
             else
             {
                 // Failed
                 result = "Keystreams were NOT bruteforced!\r\n\r\nStart over and try again :(";
             }
+
             T_Dialog.Text = result;
         }
+
         private void B_DumpBreakBox1_Click(object sender, EventArgs e)
         {
             // Dumps the Keystream for Box 1
@@ -953,6 +1018,7 @@ namespace KeySAV
                 File.WriteAllBytes(path, da(keystream1));
             }
         }
+
         private void B_DumpBreakBox2_Click(object sender, EventArgs e)
         {
             // Dumps the Keystream for Box 2
@@ -968,12 +1034,14 @@ namespace KeySAV
             {
                 saveboxkey.FileName = "Key - Box" + getbox(offset[1]) + ".bin";
             }
+
             if (saveboxkey.ShowDialog() == DialogResult.OK)
             {
                 string path = saveboxkey.FileName;
                 File.WriteAllBytes(path, da(keystream2));
             }
         }
+
         private void B_DumpBlank_Click(object sender, EventArgs e)
         {
             // Dumps the Keystream for Box 2
@@ -1002,6 +1070,7 @@ namespace KeySAV
                 T_BoxSAV.Text = path;
             }
         }
+
         private void B_OpenBoxKey_Click(object sender, EventArgs e)
         {
             // Open Key File
@@ -1015,6 +1084,7 @@ namespace KeySAV
                 T_BoxKey.Text = path;
             }
         }
+
         private void B_OpenBlank_Click(object sender, EventArgs e)
         {
             // Open Key File
@@ -1028,6 +1098,7 @@ namespace KeySAV
                 T_Blank.Text = path;
             }
         }
+
         private void B_ChangeOutputFolder_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
@@ -1036,16 +1107,19 @@ namespace KeySAV
                 T_OutPath.Text = fbd.SelectedPath;
             }
         }
+
         private void B_DumpBoxKey_Click(object sender, EventArgs e)
         {
             // Create new Keystream
-            byte[] newboxkey = new Byte[232 * 30];
+            byte[] newboxkey = new byte[232 * 30];
+
             // Fill Key
             uint offset = ToUInt32(T_BoxOffset.Text, 16);
             for (int i = 0; i < (30 * 232); i++)
             {
                 newboxkey[i] = (byte)(boxfile[offset + i] ^ blankekx[i % 232]);
             }
+
             // Keystream is prepared. Prompt saving.
             SaveFileDialog saveboxkey = new SaveFileDialog();
             saveboxkey.Filter = "Keystream|*.bin";
@@ -1056,41 +1130,42 @@ namespace KeySAV
                 File.WriteAllBytes(path, newboxkey);
             }
         }
+
         private void B_DumpBoxEKXs_Click(object sender, EventArgs e)
         {
-            string result = "";
+            string result = string.Empty;
             int valid = 0;
             int errors = 0;
-            string errstr = "";
-            string corruptedindex = "";
-            if (T_BoxOffset.Text == "")
+            string errstr = string.Empty;
+            string corruptedindex = string.Empty;
+            if (T_BoxOffset.Text == string.Empty)
             {
                 // Need an offset.
-                //MessageBox.Show("No offset entered.", "Error");
+                ////MessageBox.Show("No offset entered.", "Error");
                 T_Dialog.Text = "Error: No offset entered. Stopping.";
             }
             else
             {
                 // Dump Data
-                //try
+                ////try
                 {
                     string dumppath = T_OutPath.Text;
                     uint offset = ToUInt32(T_BoxOffset.Text, 16);
                     if (boxkey.Length < (232 * 30))
                     {
-                        //MessageBox.Show("Incorrect Box Keystream Length.", "Error");
+                        ////MessageBox.Show("Incorrect Box Keystream Length.", "Error");
                         T_Dialog.Text = "Error: Incorrect Box Keystream Length. Stopping.";
                     }
                     else
                     {
                         // Loop through all 30 to dump
-                        byte[] boxekx = new Byte[232];
-                        byte[] oldboxkey = new Byte[232 * 30];
+                        byte[] boxekx = new byte[232];
+                        byte[] oldboxkey = new byte[232 * 30];
                         for (int i = 0; i < (232 * 30); i++)
                         {
                             oldboxkey[i] = boxkey[i];
                         }
-                        byte[] blankpkx = new Byte[232];
+                        byte[] blankpkx = new byte[232];
                         for (int i = 0; i < (232); i++)
                         {
                             blankpkx[i] = blankekx[i];
@@ -1105,7 +1180,7 @@ namespace KeySAV
 
                             // Okay, we have the data. Let's get some data out for a proper filename.
                             // Decrypt the data
-                            byte[] esave = new Byte[232];
+                            byte[] esave = new byte[232];
                             for (int j = 0; j < 232; j++)
                             {
                                 esave[j] = boxekx[j];
@@ -1116,15 +1191,16 @@ namespace KeySAV
                             uint actualsum = (uint)(pkxdata[0x06] + pkxdata[0x07] * 0x100);
                             if (checksum != actualsum)
                             {
-                                //MessageBox.Show("Keystream Corruption detected for Index " + i + ". Fixing keystream.", "Error");
+                                ////MessageBox.Show("Keystream Corruption detected for Index " + i + ". Fixing keystream.", "Error");
                                 corruptedindex += (i + 1) + " - Keystream Corruption Detected\r\n";
-                                //File.WriteAllBytes(dumppath + "\\error"+i+".bin", esave);
+                                ////File.WriteAllBytes(dumppath + "\\error"+i+".bin", esave);
                                 for (int c = i * 232; c < (i + 1) * 232; c++)
                                 {
                                     boxkey[c] = (byte)(oldboxkey[c] ^ blankpkx[c % 232]);
                                 }
 
-                                byte[] fixedekx = new Byte[232];
+                                byte[] fixedekx = new byte[232];
+
                                 // Get actual data now
                                 for (int j = 0; j < 232; j++)
                                 {
@@ -1140,10 +1216,11 @@ namespace KeySAV
                                 actualsum = (uint)(pkxdata[0x06] + pkxdata[0x07] * 0x100);
                                 if (checksum != actualsum)
                                 {
-                                    //MessageBox.Show("Keystream correction failed for " + i + ". :(");
+                                    ////MessageBox.Show("Keystream correction failed for " + i + ". :(");
                                     errors++;
 
                                     errstr += "@" + (i + 1) + " - CHK Key Invalid" + "\r\n";
+
                                     // Undo our changes
                                     for (int z = 0; z < (232 * 30); z++)
                                     {
@@ -1153,7 +1230,7 @@ namespace KeySAV
                                 }
                                 else
                                 {   // Save our changes
-                                    //MessageBox.Show("Keystream correction passed.");
+                                    ////MessageBox.Show("Keystream correction passed.");
                                     corruptedindex += (i + 1) + " - Keystream Corruption Fixed!\r\n";
                                     if (!File.Exists(T_BoxKey.Text + ".bak"))
                                     {
@@ -1172,14 +1249,13 @@ namespace KeySAV
                                 string specname = getspecies(species);
                                 if (specname == "Error")
                                 {
-                                    //MessageBox.Show("Error on index " + i, "Error");
+                                    ////MessageBox.Show("Error on index " + i, "Error");
                                     errors++;
                                     errstr += "@" + (i + 1).ToString("0000") + " - Species Index: " + species + "\r\n";
                                 }
 
                                 {
                                     string location = (i / 6 + 1) + "," + (i % 6 + 1);
-
 
                                     if (C_Format.SelectedIndex == 0)
                                     {
@@ -1227,7 +1303,7 @@ namespace KeySAV
                                     }
                                     else if (C_Format.Text == "Dump")
                                     {
-                                        // Private Dumper                                    
+                                        // Private Dumper
                                         string filename =
                                         location
                                         + " - "
@@ -1247,13 +1323,14 @@ namespace KeySAV
                                 }
                             }
                         }
+
                         // Load the old boxkey as the new one, in case we made any new alterations.
                         for (int i = 0; i < (232 * 30); i++)
                         {
                             oldboxkey[i] = boxkey[i];
                         }
 
-                        if (result == "")
+                        if (result == string.Empty)
                         {
                             result = "Nothing was dumped.";
                         }
@@ -1267,9 +1344,15 @@ namespace KeySAV
                             MessageBox.Show("Successful Dump!", "Alert");
                         }
 
-                        try { Clipboard.SetText(modestring + result); }
-                        catch { };
-                        T_Dialog.Text = "";
+                        try
+                        {
+                            Clipboard.SetText(modestring + result);
+                        }
+                        catch
+                        {
+                        }
+
+                        T_Dialog.Text = string.Empty;
                         if (C_Format.Text == "Dump")
                         {
                             T_Dialog.Text += "All EKX's dumped to:\n" + dumppath + "\r\n\r\n";
@@ -1278,12 +1361,12 @@ namespace KeySAV
                         T_Dialog.Text += "Total Dumped: " + valid + "\r\n";
                         T_Dialog.Text += "Empty Slots: " + (30 - valid - errors) + "\r\n";
 
-                        if ((corruptedindex != "") && (COMPILEMODE == "Private"))
+                        if ((corruptedindex != string.Empty) && (COMPILEMODE == "Private"))
                         {
                             T_Dialog.Text += corruptedindex;
                         }
 
-                        if (errstr != "")
+                        if (errstr != string.Empty)
                         {
                             T_Dialog.Text += errstr;
                         }
@@ -1297,15 +1380,14 @@ namespace KeySAV
                         T_Dialog.Text += modestring;
                         T_Dialog.Text += result;
                         valid = 0;
-
                     }
                 }
-                //catch (Exception ex)
-                //{
-                //    string message = "Error while dumping:\n\n" + ex + "\n\nDid you enter everything properly? If not, fix it!";
-                //    string caption = "Error";
-                //    MessageBox.Show(message, caption);
-                //}
+                ////catch (Exception ex)
+                ////{
+                ////    string message = "Error while dumping:\n\n" + ex + "\n\nDid you enter everything properly? If not, fix it!";
+                ////    string caption = "Error";
+                ////    MessageBox.Show(message, caption);
+                ////}
             }
         }
 
@@ -1323,6 +1405,7 @@ namespace KeySAV
                 T_Open1.Text = path;
             }
         }
+
         private void B_OpenEKX_Click(object sender, EventArgs e)
         {
             // Open EKX
@@ -1336,6 +1419,7 @@ namespace KeySAV
                 T_ekx.Text = path;
             }
         }
+
         private void B_OpenKey_Click(object sender, EventArgs e)
         {
             // Open Keystream
@@ -1349,20 +1433,21 @@ namespace KeySAV
                 T_key.Text = path;
             }
         }
+
         private void B_DumpEKX_Click(object sender, EventArgs e)
         {
             // Save Data
-            if ((T_Open1.Text != "") && (T_key.Text != ""))
+            if ((T_Open1.Text != string.Empty) && (T_key.Text != string.Empty))
             {
                 uint offset = ToUInt32(T_KeyOffset.Text, 16);
-                byte[] ekxdata = new Byte[232];
+                byte[] ekxdata = new byte[232];
                 for (uint i = offset; i < (offset + 232); i++)
                 {
                     ekxdata[i - offset] = (byte)(savefile[i] ^ keystream[i - offset]);
                 }
                 SaveFileDialog save = new SaveFileDialog();
                 save.Filter = "EKX|*.ekx";
-                byte[] esave = new Byte[232];
+                byte[] esave = new byte[232];
                 Array.Copy(ekxdata, esave, 232);
                 byte[] pkxdata = decryptarray(ekxdata);
 
@@ -1378,7 +1463,6 @@ namespace KeySAV
                 {
                     string path = save.FileName;
                     File.WriteAllBytes(path, esave);
-
                 }
             }
             else
@@ -1388,13 +1472,14 @@ namespace KeySAV
                 MessageBox.Show(message, caption);
             }
         }
+
         private void B_DumpKey_Click(object sender, EventArgs e)
         {
             // Save Data
-            if ((T_Open1.Text != "") && (T_ekx.Text != ""))
+            if ((T_Open1.Text != string.Empty) && (T_ekx.Text != string.Empty))
             {
                 uint offset = ToUInt32(T_KeyOffset.Text, 16);
-                byte[] data = new Byte[232];
+                byte[] data = new byte[232];
                 for (uint i = offset; i < (offset + 232); i++)
                 {
                     data[i - offset] = (byte)(savefile[i] ^ ekx[i - offset]);
@@ -1416,18 +1501,18 @@ namespace KeySAV
                 MessageBox.Show(message, caption);
             }
         }
+
         private void B_FixKey_Click(object sender, EventArgs e)
         {
             // savefile stores our save
             // keystream stores our key
             // ekx stores our ekx
 
-            // 
             uint fixindex = ToUInt32(T_FixKey.Text, 16);
             uint saveoffset = ToUInt32(T_KeyOffset.Text, 16);
 
             // Copy over keystream to new var
-            byte[] newstream = new Byte[6960];
+            byte[] newstream = new byte[6960];
             Array.Copy(keystream, newstream, 6960);
 
             for (int i = 0; i < 232; i++)
@@ -1445,6 +1530,7 @@ namespace KeySAV
                 File.WriteAllBytes(path, newstream);
             }
         }
+
         private void B_FixEKX_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Loaded EKX is the EKX you want to fix, yes? If so, press OK and when prompted load the Blank EKX", "Prompt");
@@ -1454,8 +1540,8 @@ namespace KeySAV
 
             if (openblankfix.ShowDialog() == DialogResult.OK)
             {
-                byte[] fixingekx = new Byte[232];
-                byte[] newekx = new Byte[232];
+                byte[] fixingekx = new byte[232];
+                byte[] newekx = new byte[232];
                 string path = openblankfix.FileName;
                 fixingekx = File.ReadAllBytes(path);
                 byte[] fixingpkx = decryptarray(fixingekx);
@@ -1463,6 +1549,7 @@ namespace KeySAV
                 {
                     newekx[i] = (byte)(ekx[i] ^ fixingpkx[i]);
                 }
+
                 // New EKX is prepared. Prompt saving.
                 SaveFileDialog savenewekx = new SaveFileDialog();
                 savenewekx.Filter = "EKX|*.ekx";
@@ -1489,6 +1576,7 @@ namespace KeySAV
                 T_S1.Text = path;
             }
         }
+
         private void B_E1_Click(object sender, EventArgs e)
         {
             OpenFileDialog openekx1 = new OpenFileDialog();
@@ -1501,6 +1589,7 @@ namespace KeySAV
                 T_E1.Text = path;
             }
         }
+
         private void B_S2_Click(object sender, EventArgs e)
         {
             // Open Save File 2
@@ -1514,6 +1603,7 @@ namespace KeySAV
                 T_S2.Text = path;
             }
         }
+
         private void B_E2_Click(object sender, EventArgs e)
         {
             OpenFileDialog openekx2 = new OpenFileDialog();
@@ -1526,6 +1616,7 @@ namespace KeySAV
                 T_E2.Text = path;
             }
         }
+
         private void B_FindOffset_Click(object sender, EventArgs e)
         {
             // Find the offset of swapped EKX's
@@ -1537,12 +1628,12 @@ namespace KeySAV
 
             // Loop through save file to find
             int fo = 0xA0; // Initial Offset, can tweak later.
-            string res = "";
+            string res = string.Empty;
             for (int i = fo; i < 0xEB000; i++)
             {
                 int err = 0;
-                // Start at findoffset and see if it matches pattern
 
+                // Start at findoffset and see if it matches pattern
                 if ((save1[i + 4] == save2[i + 4]) && (save1[i + 4 + 232] == save2[i + 4 + 232]))
                 {
                     // Unused Pads are the same
@@ -1568,7 +1659,7 @@ namespace KeySAV
                         if (err < 20)
                         {
                             // Tolerable amount of difference between offsets. We have a result.
-                            if (res != "")
+                            if (res != string.Empty)
                             {
                                 res += ", ";
                             }
@@ -1578,12 +1669,15 @@ namespace KeySAV
                     }
                 }
             }
-            if (res == "")
+
+            if (res == string.Empty)
             {
                 res = "No result found";
             }
+
             T_Dialog.Text = res;
         }
+
         private void B_DumpKey2_Click(object sender, EventArgs e)
         {
             // Logic to get the key!
@@ -1596,15 +1690,15 @@ namespace KeySAV
             {
                 // Blocks aren't in the same position. Great! Let's continue.
                 uint saveoffset = ToUInt32(T_Key2Offset.Text, 16);
-                // Get the two keystreams.
 
-                byte[] data1 = new Byte[232];
+                // Get the two keystreams.
+                byte[] data1 = new byte[232];
                 for (uint i = saveoffset; i < (saveoffset + 232); i++)
                 {
                     data1[i - saveoffset] = (byte)(save1[i] ^ ekx1[i - saveoffset]);
                 }
 
-                byte[] data2 = new Byte[232];
+                byte[] data2 = new byte[232];
                 for (uint i = saveoffset; i < (saveoffset + 232); i++)
                 {
                     data2[i - saveoffset] = (byte)(save2[i] ^ ekx2[i - saveoffset]);
@@ -1631,8 +1725,8 @@ namespace KeySAV
                     {
                         key2[i] = data1[i];
                     }
-                    // Copy over the first keystream, skipping the C block.
 
+                    // Copy over the first keystream, skipping the C block.
                     for (int i = 0; i < 4; i++)
                     {
                         if (getCloc(ec1) != i)
@@ -1685,6 +1779,7 @@ namespace KeySAV
             {
                 message += "\r\n\r\nPublic Version.";
             }
+
             string caption = "About";
             MessageBox.Show(message, caption);
         }
